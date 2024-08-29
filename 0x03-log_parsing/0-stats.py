@@ -1,81 +1,63 @@
 #!/usr/bin/python3
-"""log parsing module"""
-
+"""
+Log Parser Script
+"""
 import sys
+import re
+from collections import defaultdict
 
 
-def log_data(ts, scode):
+def parse_log_line(line):
     """
-    Print statistics based on the total file
-    size and the counts of each
-    status code.
+    Parse a single log line and extract the status code and file size.
 
     Args:
-        ts (int): The total size of all files processed.
-        scode (dict): A dictionary containing counts of
-        each status code
+        line (str): A single line from the log file.
 
     Returns:
-        None
+        tuple: (status_code, file_size) if the line matches the expected format,
+               otherwise (None, None).
     """
-    print(f"File size: {ts}")
-    for code, count in sorted(scode.items()):
-        print(f"{code}: {count}")
+    pattern = r'^[\d\.]+ - \[.+\] "GET /projects/260 HTTP/1\.1" (\d+) (\d+)$'
+    match = re.match(pattern, line.strip())
+    if match:
+        return int(match.group(1)), int(match.group(2))
+    return None, None
 
-
-def parse_line(data):
+def print_statistics(total_size, status_counts):
     """
-    Parse a log line to extract relevant information.
+    Print the computed statistics.
 
     Args:
-        line (str): A single log line to be parsed.
-
-    Returns:
-        tuple or None: A tuple containing the IP address,
-        status code, and file size if parsing is successful,
-        otherwise None.
+        total_size (int): The total file size.
+        status_counts (dict): A dictionary containing the count of each status cod.
     """
-    parts = data.split()
-    if len(parts) < 9:
-        return None
-    ip_address = parts[0]
-    status_code = parts[-2]
-    file_size = parts[-1]
-    if not status_code.isdigit():
-        return None
-    return ip_address, int(status_code), int(file_size)
-
+    print(f"File size: {total_size}")
+    for status in sorted(status_counts.keys()):
+        if status.isdigit():
+            print(f"{status}: {status_counts[status]}")
 
 def main():
     """
-    Main function to read log lines from stdin, parse
-    them, compute statistics, and print them.
-
-    Returns:
-        None
+    Main function to process log lines and compute statistics.
     """
-    ts = 0
-    scode = {}
+    total_size = 0
+    status_counts = defaultdict(int)
+    line_count = 0
 
     try:
-        for i, line in enumerate(sys.stdin, 1):
-            parsed = parse_line(line)
-            if parsed is None:
-                continue
-            ip_address, status_code, file_size = parsed
-            ts += file_size
-            scode[status_code] = scode.get(
-                status_code,
-                0
-                ) + 1
+        for line in sys.stdin:
+            status_code, file_size = parse_log_line(line)
+            if status_code is not None and file_size is not None:
+                total_size += file_size
+                status_counts[str(status_code)] += 1
+                line_count += 1
 
-            if i % 10 == 0:
-                log_data(ts, scode)
-    except KeyboardInterrupt as e:
-        pass
+                if line_count % 10 == 0:
+                    print_statistics(total_size, status_counts)
 
-    log_data(ts, scode)
-
+    except KeyboardInterrupt:
+        print_statistics(total_size, status_counts)
 
 if __name__ == "__main__":
     main()
