@@ -30,7 +30,7 @@ def print_statistics(total_size, status_counts):
 
     Args:
         total_size (int): The total file size.
-        status_counts (dict): A dictionary containing the count of each status code.
+        status_counts (dict): A dictionary containing the count of each status cod.
     """
     print(f"File size: {total_size}")
     for status in sorted(status_counts.keys()):
