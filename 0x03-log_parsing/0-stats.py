@@ -15,7 +15,8 @@ def parse_log_line(line):
         line (str): A single line from the log file.
 
     Returns:
-        tuple: (status_code, file_size) if the line matches the expected format,
+        tuple: (status_code, file_size) if the line
+        matches the expected format,
                otherwise (None, None).
     """
     pattern = r'^[\d\.]+ - \[.+\] "GET /projects/260 HTTP/1\.1" (\d+) (\d+)$'
@@ -24,18 +25,21 @@ def parse_log_line(line):
         return int(match.group(1)), int(match.group(2))
     return None, None
 
+
 def print_statistics(total_size, status_counts):
     """
     Print the computed statistics.
 
     Args:
         total_size (int): The total file size.
-        status_counts (dict): A dictionary containing the count of each status cod.
+        status_counts (dict): A dictionary
+        containing the count of each status cod.
     """
     print(f"File size: {total_size}")
     for status in sorted(status_counts.keys()):
         if status.isdigit():
             print(f"{status}: {status_counts[status]}")
+
 
 def main():
     """
@@ -58,6 +62,7 @@ def main():
 
     except KeyboardInterrupt:
         print_statistics(total_size, status_counts)
+
 
 if __name__ == "__main__":
     main()
