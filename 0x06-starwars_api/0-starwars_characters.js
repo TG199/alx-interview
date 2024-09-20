@@ -1,6 +1,6 @@
 #!/usr/bin/node
 
-const request = require('request-promise-native');
+const request = require('request');
 
 // Function to fetch movie data and characters
 async function fetchCharacters (movieId) {
